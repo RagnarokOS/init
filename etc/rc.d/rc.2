@@ -1,0 +1,52 @@
+#!/bin/ksh
+
+. /etc/rc.subr
+
+EXEC_PREFIX="/etc/init.d"
+
+# Base system services
+start_srv console-setup.sh bootlogs rsyslog rmnologin \
+cron dbus openntpd opensmtpd elogind
+
+# Init scripts installed by packages
+if [[ -n $(get_val "pkg_scripts" "/etc/rc.conf") ]]; then
+	printf '%s\n' "Starting package services..."
+		for _srv in $(get_val "pkg_scripts" "/etc/rc.conf"); do
+			if [[ -x ${EXEC_PREFIX}/$_srv ]]; then
+				"${EXEC_PREFIX}"/"$_srv" start
+			else
+				printf '%s\n' "$_srv script not executable"
+			fi
+		done
+fi
+
+# Local init scripts
+if [[ -x /etc/rc.local ]]; then
+	printf '%s\n' "Starting local services..."
+	/etc/rc.local start
+fi
+
+##################################################################
+### Older implementation. Keeping here for now in case of fire ###
+##################################################################
+
+# Setting up the console
+#${EXEC_PREFIX}/console-setup.sh start
+
+# Taking care of bootlogs
+#${EXEC_PREFIX}/bootlogs start
+
+# starting rsyslog
+#${EXEC_PREFIX}/rsyslog start
+
+# rm nologin
+#${EXEC_PREFIX}/rmnologin start
+
+# starting cron
+#${EXEC_PREFIX}/cron start
+
+# Dbus
+#${EXEC_PREFIX}/dbus start
+
+# Starting elogind
+#${EXEC_PREFIX}/elogind start
