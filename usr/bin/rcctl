@@ -34,8 +34,10 @@ handle_err() {
 	if [[ ! -f ${EXEC_PREFIX}/${_srv} ]]; then
 		if [[ -f ${EXEC_PREFIX}/${_srv}.sh ]]; then
 			printf '%s\n' "${_srv} does not exist, did you mean ${_srv}.sh?"
+			exit 1
 		else
 			printf '%s\n' "${_srv} does not exist"
+			usage
 		fi
 	fi
 
