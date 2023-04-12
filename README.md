@@ -1,4 +1,8 @@
-# init
-Ragnarok's sysvinit implementation
+init
+====
 
-Work In Progress -- All init stuff will be dropped here.
+# Work in progress
+
+Ragnarok's sysvinit implementation. This effectively replaces sysv-rc.
+Will eventually support [Suckless init](https://core.suckless.org/sinit/) as well.
+
