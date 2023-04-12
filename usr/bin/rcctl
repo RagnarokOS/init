@@ -1,0 +1,99 @@
+#!/bin/ksh
+
+. /etc/rc.subr
+
+EXEC_PREFIX="/etc/init.d"
+CONF="/etc/rc.conf"
+
+_action="$1"
+_srv="$2"
+
+usage() {
+	printf '%s\n' "
+Usage:
+
+rcctl <action> <service-name>
+
+Valid actions:
+	enable, disable, start, restart, stop
+
+See rcctl.8 for extra details and examples.
+"
+	exit 1
+}
+
+# This isn't as straightforward as a simple case statement in each functions,
+# but should better cover all the possible error scenarios.
+handle_err() {
+	# if _srv and _action are missing, print usage() then abort.
+	[[ -z $_srv ]] && [[ -z $_action ]] && usage
+
+	# Check if <script> exists, and if it doesn't, check if <script>.sh exists
+	# and output the name if it does. Some of Debian's init scripts have the
+	# .sh extension, so we need to handle those.
+	if [[ ! -f ${EXEC_PREFIX}/${_srv} ]]; then
+		if [[ -f ${EXEC_PREFIX}/${_srv}.sh ]]; then
+			printf '%s\n' "${_srv} does not exist, did you mean ${_srv}.sh?"
+		else
+			printf '%s\n' "${_srv} does not exist"
+		fi
+	fi
+
+	# if this isn't a valid action, print usage() then abort.
+	! { [[ $_action = "enable" ]] || [[ $_action = "disable" ]] || [[ $_action = "start" ]] || \
+	[[ $_action = "restart" ]] || [[ $_action = "stop" ]]; } && usage
+
+	# If _srv has the name of an action, then either _srv is missing, or the two args
+	# were swapped, in which case print usage() then abort.
+	{ [[ $_srv = "enable" ]] || [[ $_srv = "disable" ]] || [[ $_srv = "start" ]] || \
+	[[ $_srv = "restart" ]] || [[ $_srv = "stop" ]]; } && usage
+}
+
+# Enable a service in the default runlevel (a.k.a runlevel 2)
+do_enable() {
+	local _state
+	
+	_state=$(getval "$_srv" "$CONF")
+
+	case "$_state" in
+		YES)	printf '%s\n' "$_srv already enabled"
+			;;
+		NO)	sed -i "s/.*$_srv.*/${_srv}=YES/" "$CONF"
+			;;
+		*)	sed -i "/^pkg_scripts=/ s/$/ ${_srv}/" "$CONF"
+			;;
+	esac
+}
+
+# Disable a service that is in the default runlevel.
+do_disable() {
+	local _state
+	
+	_state=$(getval "$_srv" "$CONF")
+
+	case "$_state" in
+		YES)	sed -i "s/.*$_srv.*/${_srv}=NO/" "$CONF"
+			;;
+		NO)	printf '%s\n' "$_srv already disabled"
+			;;
+		*)	sed -i "s/${_srv} //" "$CONF"
+			;;
+	esac
+}
+
+# Meat and potatoes
+handle_err
+case "$_action" in
+	enable)		do_enable
+			;;
+	disable)	do_disable
+			;;
+	start)		start_srv "$_srv"
+			;;
+	restart)	"${EXEC_PREFIX}"/"$_srv" restart
+			;;
+	stop)		stop_srv "$_srv"
+			;;
+	*)		usage
+			;;
+esac
