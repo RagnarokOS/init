@@ -11,18 +11,10 @@ si::sysinit:/etc/rc.d/rc.sysinit
 # What to do in single-user mode.
 ~~:S:wait:/sbin/sulogin --force
 
-# /etc/init.d executes the S and K scripts upon change
-# of runlevel.
-#
 # Runlevel 0 is halt.
 # Runlevel 1 is single-user.
 # Runlevels 2-5 are multi-user.
 # Runlevel 6 is reboot.
-
-# h = halt
-# s = single-user mode
-# m = multi-user mode
-# r = reboot
 
 h:0:wait:/etc/rc.d/rc.0
 s:1:wait:/etc/rc.d/rc.1

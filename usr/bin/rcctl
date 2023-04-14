@@ -15,7 +15,7 @@ Usage:
 rcctl <action> <service-name>
 
 Valid actions:
-	enable, disable, start, restart, stop
+	enable, disable, start, restart, stop, status
 
 See rcctl.8 for extra details and examples.
 "
@@ -43,12 +43,12 @@ handle_err() {
 
 	# if this isn't a valid action, print usage() then abort.
 	! { [[ $_action = "enable" ]] || [[ $_action = "disable" ]] || [[ $_action = "start" ]] || \
-	[[ $_action = "restart" ]] || [[ $_action = "stop" ]]; } && usage
+	[[ $_action = "restart" ]] || [[ $_action = "stop" ]] || [[ $_action = "status" ]]; } && usage
 
 	# If _srv has the name of an action, then either _srv is missing, or the two args
 	# were swapped, in which case print usage() then abort.
 	{ [[ $_srv = "enable" ]] || [[ $_srv = "disable" ]] || [[ $_srv = "start" ]] || \
-	[[ $_srv = "restart" ]] || [[ $_srv = "stop" ]]; } && usage
+	[[ $_srv = "restart" ]] || [[ $_srv = "stop" ]] || [[ $_action = "status" ]]; } && usage
 }
 
 # Enable a service in the default runlevel (a.k.a runlevel 2)
@@ -83,6 +83,70 @@ do_disable() {
 	esac
 }
 
+######################################
+### handling of 'rcctl status ...' ###
+######################################
+
+# There are init scripts that are only meant to run once, during boot/shutdown
+# and aren't running afterwards. These should be ignore by the 'status all'
+# command to keep the output cleaner.
+ignored() {
+	case "$1" in
+		skeleton | README | *.dpkg-dist | *.dpkg-old | halt | rc | rcS | single | reboot | \
+			bootclean.sh | bootmisc.sh | brightness | checkfs.sh | checkroot-bootclean.sh | \
+			checkroot.sh | hostname.sh | hwclock.sh | keyboard-setup.sh | killprocs | \
+			kmod | console-setup.sh | mount-configfs | mountall.sh | mountall-bootclean.sh | \
+			mountdevsubfs.sh | mountkernfs.sh | mountnfs-bootclean.sh | mountnfs.sh | procps | \
+			networking | rmnologin | sendsigs | umountfs | umountnfs.sh | umountroot | urandom | \
+			rc.local | bootlogs)
+			return 0
+			;;
+	esac
+	return 1
+}
+
+status_all() {
+	cd /etc/init.d/ || exit
+	for _s in *; do
+		if ! ignored "$_s"; then
+			find /var/run/ -type f -name "*.pid" | grep "$_s" >/dev/null
+			#pgrep "$_s" >/dev/null
+			_ret=$?
+			if [[ $_ret -eq 0 ]]; then
+				printf '%s\n' "[+]	$_s"
+			else
+				# Some daemons, such as apparmor and nftables, don't have
+				# pid files, so we handle them differently.
+				/etc/init.d/"$_s" status >/dev/null
+				_ret=$?
+				if [[ $_ret -eq 0 ]]; then
+					printf '%s\n' "[+]	$_s"
+				else
+					printf '%s\n' "[-]	$_s"
+				fi
+			fi
+		fi
+	
+	done
+}
+
+srv_status() {
+	:	# no-op yet
+}
+
+get_status() {
+	case "$1" in
+		all)	status_all
+			;;
+		*)	srv_status "$_srv"
+			;;
+	esac
+}
+
+##############################
+### End of status handling ###
+##############################
+
 # Meat and potatoes
 handle_err
 case "$_action" in
@@ -95,6 +159,8 @@ case "$_action" in
 	restart)	"${EXEC_PREFIX}"/"$_srv" restart
 			;;
 	stop)		stop_srv "$_srv"
+			;;
+	status)		get_status "$_srv"
 			;;
 	*)		usage
 			;;
