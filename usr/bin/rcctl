@@ -48,7 +48,7 @@ handle_err() {
 	# If _srv has the name of an action, then either _srv is missing, or the two args
 	# were swapped, in which case print usage() then abort.
 	{ [[ $_srv = "enable" ]] || [[ $_srv = "disable" ]] || [[ $_srv = "start" ]] || \
-	[[ $_srv = "restart" ]] || [[ $_srv = "stop" ]] || [[ $_action = "status" ]]; } && usage
+	[[ $_srv = "restart" ]] || [[ $_srv = "stop" ]] || [[ $_srv = "status" ]]; } && usage
 }
 
 # Enable a service in the default runlevel (a.k.a runlevel 2)
