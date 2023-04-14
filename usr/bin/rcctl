@@ -116,6 +116,10 @@ status_all() {
 			# 2) this eliminates the need to actually have a status checking func
 			# within init scripts, unless it's for daemons that don't normally
 			# have a .pid file in /var/run.
+			#
+			# NOTE: rewriting all init scripts from Debian is being strongly
+			# considered. If that happens, using 'find' will not be necassary,
+			# so '/etc/init.d/<script> status' will be used across the board.
 			find /var/run/ -type f -name "*.pid" | grep "$_s" >/dev/null
 			#pgrep "$_s" >/dev/null
 			_ret=$?
