@@ -137,15 +137,65 @@ status_all() {
 	done
 }
 
+# if this is a package script, handle it
+is_pkgscript() {
+	# Just grep into grep, bro.
+	grep "pkg_scripts" "$CONF" | grep "$_srv" >/dev/null
+	_ret=$?
+	if [[ $_ret -eq 0 ]]; then
+		printf "enabled"
+	else
+		printf "disabled"
+	fi
+}
+
+# Check if _srv is enable or disabled in rc.conf
+enabled_status() {
+	local _state
+	
+	_state="$(get_val "$_srv" "$CONF")"
+
+	# First, let's make sure srv is present in rc.conf
+	if ! grep -q "$_srv" "$CONF"; then
+		printf '%s' "not in $CONF"
+		exit 1
+	fi
+
+	case "$_state" in
+		YES) printf "enabled" ;;
+		NO) printf "disabled" ;;
+		*) is_pkgscript ;;
+	esac
+}
+
+# Check is _srv is running
+running_status() {
+	find /var/run/ -type f -name "*.pid" | grep "$_srv" >/dev/null
+	#pgrep "$_s" >/dev/null
+	_ret=$?
+	if [[ $_ret -eq 0 ]]; then
+		printf "running"
+	else
+		"${EXEC_PREFIX}"/"$_srv" status >/dev/null
+		_ret=$?
+		if [[ $_ret -eq 0 ]]; then
+			printf "running"
+		else
+			printf "not running"
+		fi
+	fi
+	
+}
+
 srv_status() {
-	:	# no-op yet
+	printf '%s\n' "$_srv is $(enabled_status "$_srv") and $(running_status "$_srv")"
 }
 
 get_status() {
 	case "$1" in
 		all)	status_all
 			;;
-		*)	srv_status "$_srv"
+		*)	srv_status
 			;;
 	esac
 }
