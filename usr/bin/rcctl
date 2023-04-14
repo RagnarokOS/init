@@ -106,7 +106,7 @@ ignored() {
 }
 
 status_all() {
-	cd /etc/init.d/ || exit
+	cd "${EXEC_PREFIX}"/ || exit
 	for _s in *; do
 		if ! ignored "$_s"; then
 			find /var/run/ -type f -name "*.pid" | grep "$_s" >/dev/null
@@ -117,7 +117,7 @@ status_all() {
 			else
 				# Some daemons, such as apparmor and nftables, don't have
 				# pid files, so we handle them differently.
-				/etc/init.d/"$_s" status >/dev/null
+				"${EXEC_PREFIX}"/"$_s" status >/dev/null
 				_ret=$?
 				if [[ $_ret -eq 0 ]]; then
 					printf '%s\n' "[+]	$_s"
