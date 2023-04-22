@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-. /etc/rc.subr
+. /etc/rc.d/rc.subr
 
 EXEC_PREFIX="/etc/init.d"
 

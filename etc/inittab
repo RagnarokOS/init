@@ -11,15 +11,15 @@ si::sysinit:/etc/rc.d/rc.sysinit
 # What to do in single-user mode.
 ~~:S:wait:/sbin/sulogin --force
 
-# Runlevel 0 is halt.
-# Runlevel 1 is single-user.
-# Runlevels 2-5 are multi-user.
-# Runlevel 6 is reboot.
+# rc.poweroff = runlevel 0
+# rc.single = single user mode
+# rc.default = runlevel 2
+# rc.reboot = relevel 6
 
-h:0:wait:/etc/rc.d/rc.0
-s:1:wait:/etc/rc.d/rc.1
-m:2345:wait:/etc/rc.d/rc.2
-r:6:wait:/etc/rc.d/rc.6
+h:0:wait:/etc/rc.d/rc.poweroff
+s:1:wait:/etc/rc.d/rc.single
+m:2345:wait:/etc/rc.d/rc.default
+r:6:wait:/etc/rc.d/rc.reboot
 # Normally not reached, but fallthrough in case of emergency.
 z6:6:respawn:/sbin/sulogin --force
 

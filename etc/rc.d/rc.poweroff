@@ -1,7 +1,7 @@
 #!/bin/ksh
 
-# shellcheck source=/etc/rc.subr
-. /etc/rc.subr
+# shellcheck source=/etc/rc.d/rc.subr
+. /etc/rc.d/rc.subr
 
 EXEC_PREFIX="/etc/init.d"
 
@@ -26,7 +26,7 @@ if ((_i)); then
 fi
 
 # Running the halt script
-${EXEC_PREFIX}/reboot stop
+${EXEC_PREFIX}/halt stop
 
 ###########################################################
 #### Original script, keep here for now in case of fire ###
@@ -55,4 +55,3 @@ ${EXEC_PREFIX}/reboot stop
 #${EXEC_PREFIX}/umountfs stop
 
 #${EXEC_PREFIX}/umountroot stop
-
