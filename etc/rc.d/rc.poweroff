@@ -7,7 +7,7 @@ EXEC_PREFIX="/etc/init.d"
 
 # Stopping basic services
 stop_srv brightness elogind nftables udev urandom sendsigs rsyslog hwclock.sh \
-	umountnfs.sh networking umountfs umountroot
+	rm-machineid umountnfs.sh networking umountfs umountroot
 
 # Stopping package init scripts in reverse order.
 # Thanks to OpenBSD for the logic.
