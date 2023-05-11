@@ -55,7 +55,7 @@ handle_err() {
 do_enable() {
 	local _state
 	
-	_state=$(getval "$_srv" "$CONF")
+	_state=$(get_val "$_srv" "$CONF")
 
 	case "$_state" in
 		YES)	printf '%s\n' "$_srv already enabled"
@@ -71,7 +71,7 @@ do_enable() {
 do_disable() {
 	local _state
 	
-	_state=$(getval "$_srv" "$CONF")
+	_state=$(get_val "$_srv" "$CONF")
 
 	case "$_state" in
 		YES)	sed -i "s/.*$_srv.*/${_srv}=NO/" "$CONF"
@@ -209,20 +209,29 @@ get_status() {
 ##############################
 
 # Meat and potatoes
-handle_err
+ctrl_srv() {
+	handle_err
+	case "$_action" in
+		enable)		do_enable
+				;;
+		disable)	do_disable
+				;;
+		start)		start_srv "$_srv"
+				;;
+		restart)	"${EXEC_PREFIX}"/"$_srv" restart
+				;;
+		stop)		stop_srv "$_srv"
+				;;
+		status)		get_status "$_srv"
+				;;
+		*)		usage
+				;;
+	esac
+}
+
 case "$_action" in
-	enable)		do_enable
-			;;
-	disable)	do_disable
-			;;
-	start)		start_srv "$_srv"
-			;;
-	restart)	"${EXEC_PREFIX}"/"$_srv" restart
-			;;
-	stop)		stop_srv "$_srv"
-			;;
-	status)		get_status "$_srv"
-			;;
-	*)		usage
-			;;
+	status)	get_status "$_srv"
+		;;
+	*)	ctrl_srv
+		;;
 esac
